@@ -1,0 +1,16 @@
+{
+  "name": "code-sandbox",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "build:image": "docker build -t sandbox-runner:latest ."
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
