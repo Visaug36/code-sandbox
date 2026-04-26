@@ -14,6 +14,7 @@ RUN apk add --no-cache \
         rust \
         cargo \
         openjdk17 \
+        ruby \
  && npm install -g typescript@5.4.5 \
  && adduser -D -u 1000 sandbox \
  && mkdir -p /code && chown sandbox:sandbox /code
