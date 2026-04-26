@@ -1,30 +1,41 @@
-# Single image carrying all runtimes. Built once via `npm run build:image`
-# and reused for every execution — the server spawns disposable containers
-# from this base with `docker run --rm`.
-#
-# Layers are ordered by churn: stable OS packages first, then language
-# toolchains, then tiny per-language installs (typescript via npm) — so
-# iterating on any one language only rebuilds the tail.
-FROM node:20-alpine
+# Multi-toolchain image. Debian-slim instead of Alpine because Alpine's
+# package matrix changes between releases and broke Render's build on
+# `openjdk17`. Debian's apt repos are stable and well-known.
+FROM node:20-bookworm-slim
 
-RUN apk add --no-cache \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
         python3 \
-        build-base \
-        go \
-        rust \
+        build-essential \
+        default-jdk-headless \
+        golang-go \
+        rustc \
         cargo \
-        openjdk17 \
         ruby \
+        ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
  && npm install -g typescript@5.4.5 \
- && adduser -D -u 1000 sandbox \
+ && useradd -m -u 1000 sandbox \
  && mkdir -p /code && chown sandbox:sandbox /code
 
-# Give Go + Rust pre-populated cache dirs so per-run compiles are faster.
-# tmpfs mounts override these at runtime, but the fallback keeps host mode
-# and unprivileged tests happy.
+# Cache locations for Go + Rust. tmpfs mounts override these at runtime
+# (per /run request), but having them set keeps host-mode + tests sane.
 ENV GOCACHE=/tmp/gocache \
-    GOPATH=/tmp/gopath  \
+    GOPATH=/tmp/gopath \
     CARGO_HOME=/tmp/cargo
 
+EXPOSE 4000
+
+# Render mode runs everything inside this single container — no nested
+# Docker — so the executor falls back to host-mode subprocess calls.
+# That's safe for /check (compilers parse only, never execute code).
+ENV SANDBOX_MODE=host \
+    LOG_PATH=/tmp/executions.log
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
+COPY . .
+
 USER sandbox
-WORKDIR /code
+CMD ["node", "server.js"]
