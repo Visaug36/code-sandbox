@@ -15,7 +15,7 @@ RUN apt-get update \
         ca-certificates \
  && rm -rf /var/lib/apt/lists/* \
  && npm install -g typescript@5.4.5 \
- && useradd -m -u 1000 sandbox \
+ && useradd -m -u 1001 sandbox \
  && mkdir -p /code && chown sandbox:sandbox /code
 
 # Cache locations for Go + Rust. tmpfs mounts override these at runtime
