@@ -10,13 +10,19 @@ const PORT            = Number(process.env.PORT || 4000)
 const app = express()
 app.use(express.json({ limit: '256kb' }))
 
-// CORS — allow the GitHub Pages origin and localhost (for dev). Locked down
-// to GET/POST + JSON; no credentials, so a leaked URL can't impersonate.
-const ALLOWED_ORIGINS = new Set([
+// CORS — allow listed origins only. Default is the GitHub Pages site +
+// localhost dev ports; override at deploy time via ALLOWED_ORIGINS env
+// (comma-separated). Locked to GET/POST + JSON, no credentials, so a
+// leaked URL can't impersonate the user.
+const DEFAULT_ORIGINS = [
   'https://visaug36.github.io',
   'http://localhost:3030',
   'http://localhost:5173',
-])
+]
+const ALLOWED_ORIGINS = new Set(
+  (process.env.ALLOWED_ORIGINS?.split(',').map(s => s.trim()).filter(Boolean))
+    ?? DEFAULT_ORIGINS
+)
 app.use((req, res, next) => {
   const origin = req.headers.origin
   if (origin && ALLOWED_ORIGINS.has(origin)) {

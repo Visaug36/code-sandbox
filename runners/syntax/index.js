@@ -1,8 +1,9 @@
-import cpp  from './cpp.js'
-import java from './java.js'
-import ruby from './ruby.js'
+import cpp    from './cpp.js'
+import java   from './java.js'
+import ruby   from './ruby.js'
+import python from './python.js'
 
-const CHECKERS = { cpp, java, ruby }
+const CHECKERS = { cpp, java, ruby, python }
 
 export const SUPPORTED_CHECK = Object.keys(CHECKERS)
 
