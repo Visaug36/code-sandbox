@@ -2,6 +2,7 @@ import express from 'express'
 import { runCode, SUPPORTED } from './executor.js'
 import { checkSyntax, SUPPORTED_CHECK } from './runners/syntax/index.js'
 import { log } from './logger.js'
+import { rateLimit } from './rateLimit.js'
 
 const MAX_CODE_BYTES  = 64 * 1024
 const MAX_STDIN_BYTES = 16 * 1024
@@ -41,6 +42,9 @@ app.get('/health', (_req, res) => res.json({
   run:   SUPPORTED,
   check: SUPPORTED_CHECK,
 }))
+
+// Rate-limit /check and /run only. Health stays public for uptime probes.
+app.use(['/check', '/run'], rateLimit)
 
 // ── /check — syntax validation only, no execution ─────────────────────────
 // Runs g++/javac/ruby in their parse-only modes inside the same Docker
