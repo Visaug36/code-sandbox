@@ -28,8 +28,15 @@ EXPOSE 4000
 
 # Render mode runs everything inside this single container — no nested
 # Docker — so the executor falls back to host-mode subprocess calls.
-# That's safe for /check (compilers parse only, never execute code).
+# That's safe for /check, whose compilers run in parse-only modes
+# (g++ -fsyntax-only, ruby -c, python compile()) and never execute code.
+#
+# It is NOT safe for /run, which does execute. In host mode none of the
+# dockerRun isolation applies, so server.js refuses /run here regardless of
+# RUN_ENABLED. Do not set RUN_ENABLED=true on this image — enabling
+# execution requires a host where SANDBOX_MODE can be left as docker.
 ENV SANDBOX_MODE=host \
+    RUN_ENABLED=false \
     LOG_PATH=/tmp/executions.log
 
 WORKDIR /app
