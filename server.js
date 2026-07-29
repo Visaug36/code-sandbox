@@ -27,12 +27,18 @@ const SANDBOX_MODE = process.env.SANDBOX_MODE || 'docker'
 const app = express()
 app.use(express.json({ limit: '256kb' }))
 
-// CORS — allow listed origins only. Default is the Cloudflare Pages + GitHub Pages sites +
-// localhost dev ports; override at deploy time via ALLOWED_ORIGINS env
+// CORS — allow listed origins only. Default is the Cloudflare Pages site plus
+// the localhost dev ports; override at deploy time via ALLOWED_ORIGINS env
 // (comma-separated). Locked to GET/POST + JSON, no credentials, so a
 // leaked URL can't impersonate the user.
+//
+// Note this is a courtesy boundary, not a security one: CORS is enforced by
+// browsers, so a direct request never consults it. Anything that must be
+// genuinely unreachable has to be gated server-side (see /run below).
+//
+// https://visaug36.github.io was dropped when the duplicate GitHub Pages
+// deploy of the frontend was retired.
 const DEFAULT_ORIGINS = [
-  'https://visaug36.github.io',
   'https://lintwick.pages.dev',
   'http://localhost:3030',
   'http://localhost:5173',
